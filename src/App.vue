@@ -1,26 +1,47 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router';
-import axios from 'axios';
 import CharacterList from './components/CharacterList.vue';
-
+import Header from './components/Header.vue';
+import Footer from './components/Footer.vue';
 </script>
+
 <template>
-   <div id="app">
-   <CharacterList />
+  <div id="app">
+    <Header />
+    
+ 
+    <main class="content">
+     
+      
+ 
+      <CharacterList />
+    
+      
+    </main>
+    <Footer />
+  
+    
   </div>
 </template>
-<script>
-import CharacterList from './components/CharacterList.vue';
-
-export default {
-  name: 'App',
-  components: {
-    CharacterList
-  }
-};
-</script>
 
 <style>
-/* Global stiller buraya eklenebilir */
-</style>
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Tüm ekranı kapla */
+}
+
+.content {
+  flex: 1; /* İçerik esneklik gösterir */
+  padding-top: 20px; /* Header'ın yüksekliği kadar padding ver */
+}
+
+
+
+</style>

@@ -1,111 +1,315 @@
 <template>
-    <div class="container">
-      <h1 class="title">Character List</h1>
-      <div class="character-grid">
-        <div v-for="character in characters" :key="character.id" class="character-card">
-          <img :src="character.image" :alt="character.name" class="character-image" />
-          <div class="character-details">
-            <h2>{{ character.name }}</h2>
-            <p><strong>Status:</strong> {{ character.status }}</p>
-            <p><strong>Species:</strong> {{ character.species }}</p>
-            <p><strong>Gender:</strong> {{ character.gender }}</p>
-            <p><strong>Origin:</strong> {{ character.origin.name }}</p>
-            <p><strong>Location:</strong> {{ character.location.name }}</p>
-          </div>
+  <div class="container">
+    <div class="character-grid">
+      <div v-for="character in characters" :key="character.id" class="character-card" @click="openModal(character)">
+        <img :src="character.image" :alt="character.name" class="character-image" />
+        <div class="character-details">
+          <h2>{{ character.name }}</h2>
+          <p class="character-status">
+            <strong>Status:</strong> <span class="status-text"> <span :class="`status-${character.status.toLowerCase()}`"></span>{{ character.status }}</span>
+          </p>
+          <p><strong>Species:</strong> {{ character.species }}</p>
+          <p><strong>Gender:</strong> {{ character.gender }}</p>
+          <p><strong>Origin:</strong> {{ character.origin.name }}</p>
+          <p><strong>Location:</strong> {{ character.location.name }}</p>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  import { ref, onMounted } from 'vue';
-  import axios from 'axios';
-  
-  export default {
-    name: 'CharacterList',
-    setup() {
-      const characters = ref([]);
-  
-      const fetchCharacters = async () => {
-        try {
-          const response = await axios.get('https://rickandmortyapi.com/api/character');
-          characters.value = response.data.results;
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      };
-  
-      onMounted(fetchCharacters);
-  
-      return {
-        characters
-      };
-    }
-  };
-  </script>
-  
-  <style scoped>
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    text-align: center;
-    background-color: #1b1b1b; /*Siyah arka plan */
-    color: #fff; /* Beyaz metin */
+    <div class="pagination">
+      <button @click="fetchCharacters(pageInfo.prev)" :disabled="!pageInfo.prev">Previous</button>
+      <div class="spaceButton"> </div>
+      <div class="page-numbers">
+        <button 
+          v-for="page in getPageNumbers()" 
+          :key="page" 
+          @click="fetchCharacters(`https://rickandmortyapi.com/api/character?page=${page}`)"
+          :class="{ active: page === currentPage }"
+        >
+          {{ page }}
+        </button>
+      </div>
+      <button @click="fetchCharacters(pageInfo.next)" :disabled="!pageInfo.next">Next</button>
+      <div class="spaceButton"> </div>
+    </div>
+    
+    <!-- Modal Bileşeni -->
+    <CharacterModal 
+      :character="selectedCharacter" 
+      :isOpen="isModalOpen" 
+      @close="isModalOpen = false" 
+    />
+    
+  </div>
+</template>
+
+
+<script>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import CharacterModal from './CharacterModal.vue'; // Modal bileşeni import ediliyor
+
+export default {
+  name: 'CharacterList',
+  components: {
+    CharacterModal // Modal bileşeni kaydediliyor
+  },
+  setup() {
+    const characters = ref([]);
+    const pageInfo = ref({ pages: 1, next: null, prev: null });
+    const currentPage = ref(1);
+    const isModalOpen = ref(false); // Modal açık mı kapalı mı
+    const selectedCharacter = ref(null); // Seçilen karakter
+
+    const fetchCharacters = async (url = 'https://rickandmortyapi.com/api/character') => {
+      try {
+        const response = await axios.get(url);
+        characters.value = response.data.results;
+        pageInfo.value = response.data.info;
+        currentPage.value = Number(new URL(url).searchParams.get('page')) || 1;
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    const openModal = (character) => {
+      selectedCharacter.value = character;
+      isModalOpen.value = true;
+    };
+
+    const getPageNumbers = () => {
+      const pages = pageInfo.value.pages;
+      const current = currentPage.value;
+      const range = 5; // Number of pages to show around the current page
+
+      let start = Math.max(1, current - range);
+      let end = Math.min(pages, current + range);
+
+      // Adjust start and end if at the beginning or end of the range
+      if (current <= range) {
+        end = Math.min(pages, range * 2);
+      }
+      if (current >= pages - range) {
+        start = Math.max(1, pages - range * 2);
+      }
+
+      return Array.from({ length: end - start + 1 }, (_, i) => i + start);
+    };
+
+    onMounted(() => fetchCharacters());
+
+    return {
+      characters,
+      pageInfo,
+      currentPage,
+      fetchCharacters,
+      getPageNumbers,
+      isModalOpen,
+      selectedCharacter,
+      openModal
+    };
   }
-  
-  .title {
-    font-size: 2.5em;
-    margin-bottom: 20px;
-    color: #00ff00; /* Neon yeşil başlık */
-  }
-  
+};
+</script>
+
+
+<style scoped>
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 20px 20px; /* Header altında boşluk */
+  text-align: center;
+  background-color: #2c2c2c;
+  color: #fff;
+}
+
+.character-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.character-card {
+  background-color: #2c2c2c;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: 4px solid transparent;
+  border-image: linear-gradient(45deg, #4b4b4b, #b0b0b0);
+  border-image-slice: 1;
+}
+
+.character-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+}
+
+.character-image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-bottom: 4px solid #a12fa1;
+}
+
+.character-details {
+  padding: 20px;
+  text-align: left;
+  background-color: #2c2c2c;
+}
+
+.character-details h2 {
+  margin-bottom: 15px;
+  font-size: 1.75em;
+  color: #00ff00;
+  font-weight: bold;
+  text-align: center;
+}
+
+.character-details p {
+  margin: 10px 0;
+  font-size: 1.1em;
+  color: #f0f0f0;
+}
+
+.character-details p strong {
+  color: #ff00ff;
+}
+
+.character-status {
+  display: flex;
+  align-items: center;
+  font-size: 1.1em;
+}
+
+.character-status span {
+  margin-right: 8px;
+}
+
+.character-status .status-text {
+  margin-left: 8px;
+}
+
+.status-alive {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #00ff00;
+}
+
+.status-dead {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ff0000;
+}
+
+.status-unknown {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #808080;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
   .character-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(250px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(3, minmax(200px, 1fr));
   }
-  
-  .character-card {
-    background-color: #2c2c2c; /* Koyu gri arka plan */
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  .container {
+ 
+ padding: 100px 20px 20px; /* Header altında boşluk */
+ 
+}
+}
+
+@media (max-width: 900px) {
+  .character-grid {
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
   }
-  
-  .character-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+  .container {
+ 
+ padding: 100px 20px 20px; /* Header altında boşluk */
+ 
+}
+}
+
+@media (max-width: 600px) {
+  .character-grid {
+    grid-template-columns: 1fr;
   }
+  .container {
+ 
+  padding: 100px ; /* Header altında boşluk */
   
-  .character-image {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    border-bottom: 4px solid #ff00ff; /* Neon mor alt çizgi */
+}
+}
+
+.pagination button {
+    padding: 10px 10px;
+    font-size: 0.9em;
   }
-  
-  .character-details {
-    padding: 15px;
-    text-align: left;
-    background-color: #1f1f1f; /* Daha koyu arka plan */
+
+  .page-numbers button {
+    padding: 6px 8px;
+    font-size: 0.9em;
   }
-  
-  .character-details h2 {
-    margin-bottom: 10px;
-    font-size: 1.5em;
-    color: #00ff00; /* Neon yeşil karakter ismi */
-  }
-  
-  .character-details p {
-    margin: 5px 0;
-    font-size: 1em;
-    color: #f0f0f0; /* Açık gri metin */
-  }
-  
-  .character-details p strong {
-    color: #ff00ff; /* Neon mor vurgu */
-  }
-  </style>
-  
+
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap; /* Sayfa numaralarının taşmasını önler */
+  justify-content: center;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.pagination button {
+  background-color: #00ff00;
+  border: none;
+  color: #1b1b1b;
+  padding: 10px 25px;
+  margin: 0 5px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 1em;
+  transition: background-color 0.3s;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #00cc00;
+}
+
+.pagination button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  flex-wrap: wrap; /* Sayfa numaralarının taşmasını önler */
+  gap: 5px;
+  justify-content: center;
+}
+
+.page-numbers button {
+  background-color: #1b1b1b;
+  color: #f0f0f0;
+  padding: 8px 12px;
+}
+
+.page-numbers button.active {
+  background-color: #00ff00;
+  color: #1b1b1b;
+}
+
+.pagination span {
+  font-size: 1.1em;
+  color: #fff;
+  margin: 10px 10px;
+}
+.spaceButton{
+  padding: 40px 0px;
+}
+</style>
