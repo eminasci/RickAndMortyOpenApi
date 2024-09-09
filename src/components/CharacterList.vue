@@ -1,5 +1,29 @@
 <template>
   <div class="container">
+      <!-- Filtreleme Alanı -->
+      <div class="filter-bar">
+      <input v-model="filters.name" type="text" placeholder="Search by name" />
+      <select v-model="filters.status">
+        <option value="">Any status</option>
+        <option value="alive">Alive</option>
+        <option value="dead">Dead</option>
+        <option value="unknown">Unknown</option>
+      </select>
+      <select v-model="filters.species">
+        <option value="">Any species</option>
+        <option value="Human">Human</option>
+        <option value="Alien">Alien</option>
+        <!-- Diğer türler eklenebilir -->
+      </select>
+      <select v-model="filters.gender">
+        <option value="">Any gender</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="genderless">Genderless</option>
+        <option value="unknown">Unknown</option>
+      </select>
+      <button @click="applyFilters">Apply Filters</button>
+    </div>
     <div class="character-grid">
       <div v-for="character in characters" :key="character.id" class="character-card" @click="openModal(character)">
         <img :src="character.image" :alt="character.name" class="character-image" />
@@ -57,18 +81,35 @@ export default {
     const characters = ref([]);
     const pageInfo = ref({ pages: 1, next: null, prev: null });
     const currentPage = ref(1);
+    const filters = ref({ name: '', status: '', species: '', gender: '' });
     const isModalOpen = ref(false); // Modal açık mı kapalı mı
     const selectedCharacter = ref(null); // Seçilen karakter
 
+    // API'den karakterleri çekme fonksiyonu, URL ve filtre parametreleri dinamik olarak ekleniyor
     const fetchCharacters = async (url = 'https://rickandmortyapi.com/api/character') => {
       try {
+        let query = '';
+
+        if (filters.value.name) query += `&name=${filters.value.name}`;
+        if (filters.value.status) query += `&status=${filters.value.status}`;
+        if (filters.value.species) query += `&species=${filters.value.species}`;
+        if (filters.value.gender) query += `&gender=${filters.value.gender}`;
+
+        if (query) url += '?' + query.slice(1);  // İlk '&' karakterini kaldırmak için slice(1)
+        url += `&page=${currentPage.value}`;
+
         const response = await axios.get(url);
         characters.value = response.data.results;
         pageInfo.value = response.data.info;
-        currentPage.value = Number(new URL(url).searchParams.get('page')) || 1;
       } catch (error) {
         console.error('Error fetching data:', error);
       }
+    };
+
+    // Filtreleri uygulama fonksiyonu
+    const applyFilters = () => {
+      currentPage.value = 1; // Sayfayı sıfırla
+      fetchCharacters(); // Filtreli karakterleri getir
     };
 
     const openModal = (character) => {
@@ -101,11 +142,13 @@ export default {
       characters,
       pageInfo,
       currentPage,
+      filters,
       fetchCharacters,
       getPageNumbers,
       isModalOpen,
       selectedCharacter,
-      openModal
+      openModal,
+      applyFilters
     };
   }
 };
@@ -311,5 +354,31 @@ export default {
 }
 .spaceButton{
   padding: 40px 0px;
+}
+.filter-bar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filter-bar input,
+.filter-bar select {
+  padding: 10px;
+  font-size: 1em;
+}
+
+.filter-bar button {
+  padding: 10px 20px;
+  background-color: #00ff00;
+  border: none;
+  color: #1b1b1b;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.filter-bar button:hover {
+  background-color: #00cc00;
 }
 </style>
