@@ -65,7 +65,7 @@ export default {
         pageInfo.value = response.data.info;
         currentPage.value = page; // Geçerli sayfa bilgisini güncelle
       } catch (error) {
-        console.error('Error fetching data:', error);
+        alert("Character not found.")
       }
     };
 
