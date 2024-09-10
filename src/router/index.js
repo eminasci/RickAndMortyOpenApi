@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import MainPageView from '@/views/MainPageView.vue';
-
+import LocationsPageView from '@/views/LocationsPageView.vue';
+import EpisodesPageView from '@/views/EpisodesPageView.vue';
 import AboutPageView from '@/views/AboutPageView.vue';
 import App from '@/App.vue';
 
@@ -20,6 +21,16 @@ const routes = [
     path: '/about',
     name: 'About',
     component: AboutPageView,
+  },
+  {
+    path: '/locations',
+    name: 'Locations',
+    component: LocationsPageView,
+  },
+  {
+    path: '/episodes',
+    name: 'Episodes',
+    component: EpisodesPageView,
   },
 ];
 
