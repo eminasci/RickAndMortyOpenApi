@@ -7,19 +7,11 @@
     <CharacterGrid :characters="characters" :openModal="openModal" />
 
     <!-- Pagination -->
-    <Pagination 
-      :currentPage="currentPage" 
-      :totalPages="pageInfo.pages" 
-      :changePage="changePage" 
-      :getPageNumbers="getPageNumbers" 
-    />
+    <Pagination :currentPage="currentPage" :totalPages="pageInfo.pages" :changePage="changePage"
+      :getPageNumbers="getPageNumbers" />
 
     <!-- Modal Bileşeni -->
-    <CharacterModal
-      :character="selectedCharacter"
-      :isOpen="isModalOpen"
-      @close="isModalOpen = false"
-    />
+    <CharacterModal :character="selectedCharacter" :isOpen="isModalOpen" @close="isModalOpen = false" />
   </div>
 </template>
 
@@ -72,6 +64,10 @@ export default {
     // Filtreleri uygulama fonksiyonu
     const applyFilters = () => {
       fetchCharacters(1); // Filtre uygulandığında 1. sayfaya dön
+      filters.value.name = '';
+      filters.value.status = '';
+      filters.value.species = '';
+      filters.value.gender = '';
     };
 
     // Sayfa numarası değiştiğinde sayfayı güncelleme fonksiyonu
@@ -123,7 +119,8 @@ export default {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 20px 20px; /* Header altında boşluk */
+  padding: 20px 20px 20px;
+  /* Header altında boşluk */
   text-align: center;
   background-color: #2c2c2c;
   color: #fff;
@@ -132,19 +129,22 @@ export default {
 /* Responsive Design */
 @media (max-width: 1200px) {
   .container {
-    padding: 100px 20px 20px; /* Header altında boşluk */
+    padding: 100px 20px 20px;
+    /* Header altında boşluk */
   }
 }
 
 @media (max-width: 900px) {
   .container {
-    padding: 100px 20px 20px; /* Header altında boşluk */
+    padding: 100px 20px 20px;
+    /* Header altında boşluk */
   }
 }
 
 @media (max-width: 600px) {
   .container {
-    padding: 100px ; /* Header altında boşluk */
+    padding: 100px;
+    /* Header altında boşluk */
   }
 }
 </style>
