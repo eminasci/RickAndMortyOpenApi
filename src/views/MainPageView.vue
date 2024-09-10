@@ -1,23 +1,24 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router';
-import Header from './components/Header.vue';
-import Footer from './components/Footer.vue';
+import CharacterList from '@/components/CharacterList.vue';
+import Header from '@/components/Header.vue';
+import Footer from '@/components/Footer.vue';
 </script>
 
 <template>
   <div id="app">
-    <Header />
+ 
     
  
     <main class="content">
      
       
  
-      
+      <CharacterList />
     
       
     </main>
-    <Footer />
+  
   
     
   </div>
