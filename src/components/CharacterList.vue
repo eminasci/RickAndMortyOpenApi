@@ -72,10 +72,10 @@ export default {
     // Filtreleri uygulama fonksiyonu
     const applyFilters = () => {
       fetchCharacters(1); // Filtre uygulandığında 1. sayfaya dön
-      filters.value.name = '';
-  filters.value.status = '';
-  filters.value.species = '';
-  filters.value.gender = '';
+  //     filters.value.name = '';
+  // filters.value.status = '';
+  // filters.value.species = '';
+  // filters.value.gender = '';
     };
 
     // Sayfa numarası değiştiğinde sayfayı güncelleme fonksiyonu
